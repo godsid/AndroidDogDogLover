@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">DogDog Lover</string>
+    <string name="action_about">About Us</string>
+    <string name="title_activity_about_us">About Us</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="version">Version:</string>
+
+    <string-array name="section">
+        <item>ชุมชนคนรักหมา</item>
+    </string-array>
+
+</resources>
