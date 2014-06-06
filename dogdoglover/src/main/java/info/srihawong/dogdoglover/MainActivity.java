@@ -30,6 +30,7 @@ import com.google.analytics.tracking.android.MapBuilder;
 import com.google.analytics.tracking.android.Tracker;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.InterstitialAd;
 
 
 import org.json.JSONException;
@@ -52,14 +53,23 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
      * current dropdown position.
      */
     private static final String STATE_SELECTED_NAVIGATION_ITEM = "selected_navigation_item";
-
+    private InterstitialAd interstitial;
     public static Tracker gaTracker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
+
+        // Create the interstitial.
+        interstitial = new InterstitialAd(this);
+        interstitial.setAdUnitId(Config.adsInterstitialUnitID);
+
+        // Create ad request.
+        AdRequest adRequest = new AdRequest.Builder().build();
+
+        // Begin loading your interstitial.
+        interstitial.loadAd(adRequest);
 
         // Set up the action bar to show a dropdown list.
         final ActionBar actionBar = getSupportActionBar();
@@ -78,6 +88,22 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
         gaTracker = GoogleAnalytics.getInstance(this).getTracker(getResources().getString(R.string.ga_trackingId));
     }
 
+    /** Called when the Show Interstitial button is clicked. */
+    public void showInterstitial(View unusedView) {
+        // Disable the show button until another interstitial is loaded.
+        if (interstitial.isLoaded()) {
+            interstitial.show();
+        } else {
+            Log.d("tui", "Interstitial ad was not ready to be shown.");
+        }
+    }
+
+    // Invoke displayInterstitial() when you are ready to display an interstitial.
+    public void displayInterstitial() {
+        if (interstitial.isLoaded()) {
+            interstitial.show();
+        }
+    }
     @Override
     public void onRestoreInstanceState(Bundle savedInstanceState) {
         // Restore the previously serialized current dropdown position.
