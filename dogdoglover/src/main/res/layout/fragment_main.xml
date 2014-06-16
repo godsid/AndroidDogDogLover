@@ -19,8 +19,9 @@
             android:id="@+id/adView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            ads:adUnitId="ca-app-pub-4631743491157031/5489361073"
+            ads:adUnitId="ca-app-pub-4631743491157031/3415258279"
             ads:adSize="SMART_BANNER" />
+        <!---->
         <ListView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

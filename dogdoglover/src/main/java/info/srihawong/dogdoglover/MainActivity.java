@@ -1,6 +1,7 @@
 package info.srihawong.dogdoglover;
 
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
@@ -28,8 +29,10 @@ import com.google.analytics.tracking.android.Fields;
 import com.google.analytics.tracking.android.GoogleAnalytics;
 import com.google.analytics.tracking.android.MapBuilder;
 import com.google.analytics.tracking.android.Tracker;
+import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.InterstitialAd;
 
 
 import org.json.JSONException;
@@ -52,15 +55,42 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
      * current dropdown position.
      */
     private static final String STATE_SELECTED_NAVIGATION_ITEM = "selected_navigation_item";
-
+    public static InterstitialAd interstitialAds;
+    public AdRequest adRequest;
     public static Tracker gaTracker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
 
+        /*******************************************************/
+        //Create the interstitial Ads.
+        interstitialAds = new InterstitialAd(this);
+        interstitialAds.setAdUnitId(Config.adsInterstitialUnitIDFullPage);
+        interstitialAds.setAdListener(new AdListener() {
+            @Override
+            public void onAdLoaded() {
+                //super.onAdLoaded();
+                Log.d("tui","interstitial Ads Loaded");
+            }
+
+            @Override
+            public void onAdClosed() {
+                Log.d("tui","interstitial Ads Close");
+                interstitialAds.loadAd(adRequest);
+                //super.onAdClosed();
+            }
+        });
+
+        // Create ad request.
+        adRequest = new AdRequest.Builder()
+                .addKeyword(Config.adsInterstitialKeyword)
+                .build();
+
+        // Begin loading your interstitial.
+        interstitialAds.loadAd(adRequest);
+        /*******************************************************/
         // Set up the action bar to show a dropdown list.
         final ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayShowTitleEnabled(false);
@@ -77,6 +107,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
                 this);
         gaTracker = GoogleAnalytics.getInstance(this).getTracker(getResources().getString(R.string.ga_trackingId));
     }
+
 
     @Override
     public void onRestoreInstanceState(Bundle savedInstanceState) {
@@ -126,6 +157,14 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
         return true;
     }
 
+    @Override
+    public void onBackPressed() {
+        if(interstitialAds.isLoaded()) {
+            interstitialAds.show();
+        }
+        super.onBackPressed();
+    }
+
     /**
      * A placeholder fragment containing a simple view.
      */
@@ -141,12 +180,16 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
          * Returns a new instance of this fragment for the given section
          * number.
          */
+
+        private int page = 0;
+
         PlusAPI plusAPI;
         ArrayList<ListItem> listItems;
         ListAdapter itemListAdapter;
         ListView listView;
         Boolean loadMore = false;
         String hashTag = "";
+
         public static PlaceholderFragment newInstance(int sectionNumber) {
             PlaceholderFragment fragment = new PlaceholderFragment();
             Bundle args = new Bundle();
@@ -171,6 +214,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
             AdRequest.Builder adBuilder = new AdRequest.Builder();
             AdRequest adRequest = adBuilder.build();
             AdView adView = (AdView) rootView.findViewById(R.id.adView);
+            //adView.setAdUnitId(Config.adsInterstitialUnitIDTop);
             adView.loadAd(adRequest);
             return rootView;
         }
@@ -212,6 +256,17 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
         }
 
         public void getHashTag(Boolean nextPage){
+            if(nextPage){
+                page++;
+            }else{
+                page=0;
+            }
+            Log.d("tui","data page "+String.valueOf(page));
+            if((page == Config.adsInterstitialPageShow) && page != 0 && interstitialAds.isLoaded()){
+                Log.d("tui","interstitial ads show");
+                interstitialAds.show();
+            }
+
             AQuery aq = new AQuery(getActivity());
             String url;
             loadMore = true;
@@ -239,7 +294,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.OnNavig
                                 listItems.clear();
                             }
                             for(int i=0,j=plusAPI.items.length();i<j;i++) {
-                                if(plusAPI.isImage(i)) {
+                                if(plusAPI.isImage(i)&&plusAPI.isCommunity(i,"ชุมชนคนรักหมา")) {
                                     ListItem listItem = new ListItem(plusAPI.getTitle(i), plusAPI.getItemImage(i).get(0), plusAPI.getUseImage(i));
                                     listItems.add(listItem);
                                 }

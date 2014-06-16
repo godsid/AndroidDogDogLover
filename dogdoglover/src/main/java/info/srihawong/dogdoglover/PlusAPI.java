@@ -20,7 +20,7 @@ public class PlusAPI {
     //https://developers.google.com/apis-explorer/#p/plus/v1/plus.activities.search
 
     final static String API_KEY = "AIzaSyB3Mde-V5jR7RgKTg5EIw-2nRQHZ-vhAcs";
-    final static String FIELDS = "items(actor/image,object(attachments(image(type,url),objectType)),published,title),nextPageToken,updated";
+    final static String FIELDS = "items(access,actor/image,object(attachments(image(type,url),objectType)),published,title),nextPageToken,updated";
     final static int MAXRESULTS = 20;
     final static String ORDERBY = "recent";
     final static String API_URL = "https://www.googleapis.com/plus/v1/people/105673786726226588803/activities/public?maxResults="+String.valueOf(MAXRESULTS)+"&orderBy="+ORDERBY+"&fields="+FIELDS;
@@ -71,6 +71,18 @@ public class PlusAPI {
 
         return items.getJSONObject(position).getJSONObject("actor").getJSONObject("image").getString("url");
 
+    }
+    public Boolean isCommunity(int position,String keyword){
+        try {
+            if(items.getJSONObject(position).getJSONObject("access").getString("description").contains(keyword)){
+                return true;
+            }else{
+                return false;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
     public Boolean isImage(int position) {
         try {
